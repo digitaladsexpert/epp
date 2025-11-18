@@ -1,0 +1,2 @@
+# Fallback to index (single page)
+/*    /index.html   200
