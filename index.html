@@ -17,7 +17,7 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1593721464926438');
+fbq('init', '1743927326303460');
 fbq('track', 'PageView');
 </script>
 
@@ -103,6 +103,7 @@ const telegramAppLink = "tg://join?invite=ZrjDtoQ9Tgw3ZWQ1";
 const telegramWebLink = "https://t.me/+ZrjDtoQ9Tgw3ZWQ1";
 
 let answered=false;
+let eventSent=false; // ensure fbq Subscribe sends once
 const qBox=document.getElementById('q-box'),
       bar=document.getElementById('bar'),
       progNum=document.getElementById('progNum');
@@ -138,11 +139,30 @@ function onChooseSingle(ev){
   setTimeout(()=>{ updateProgress(100); showResultFor(val); },220);
 }
 
+/* Send Subscribe event (protected by eventSent flag) */
+function sendSubscribeEvent(){
+  if(eventSent) return;
+  eventSent = true;
+  try{
+    // main FB Pixel event
+    fbq('track','Subscribe');
+    // optionally add any custom params:
+    // fbq('track','Subscribe', {method: 'landing_page', plan: 'free'} );
+  }catch(e){
+    // ignore if fbq not available
+    console.warn('fbq error', e);
+  }
+}
+
 /* Try deep open via app URI, fallback to web invite after short delay */
 function deepRedirect(){
+  // fire subscribe event first (no intentional delay)
+  sendSubscribeEvent();
+
   const now = Date.now();
-  // attempt app open
+  // attempt app open (this will often open the Telegram app on mobile)
   window.location.href = telegramAppLink;
+
   // fallback to web link after 900ms (gives mobile OS time to switch to app)
   setTimeout(()=>{ 
     // avoid redirect loop if already moved away
@@ -168,9 +188,20 @@ function showResultFor(val){
     let t=7; const count=document.getElementById('count');
     const timer=setInterval(()=>{
       t--; if(count) count.textContent = t;
-      if(t<=0){ clearInterval(timer); deepRedirect(); }
+      if(t<=0){ clearInterval(timer); /* fire event then redirect */ deepRedirect(); }
     },1000);
-    setTimeout(()=>{ document.getElementById('joinBtn').addEventListener('click', deepRedirect); },50);
+
+    // attach click handler immediately (fires event then redirect)
+    setTimeout(()=>{ 
+      const btn = document.getElementById('joinBtn');
+      if(btn){
+        btn.addEventListener('click', function(e){
+          e.preventDefault();
+          // fire event and redirect right away (no extra waiting)
+          deepRedirect();
+        });
+      }
+    },50);
   } else {
     qBox.innerHTML = `
       <div class="thankyou">
@@ -185,7 +216,13 @@ function showResultFor(val){
     `;
     setTimeout(()=>{
       document.getElementById('backBtn').addEventListener('click', ()=>{ answered=false; renderSingleQuestion(); });
-      document.getElementById('learnBtn').addEventListener('click', deepRedirect);
+      // If user clicks resources, we consider that a path to the channel as well.
+      document.getElementById('learnBtn').addEventListener('click', function(e){
+        e.preventDefault();
+        // if you don't want this to be treated as a subscribe click, remove the sendSubscribeEvent() call below.
+        // Currently it will also send Subscribe then redirect.
+        deepRedirect();
+      });
     },50);
   }
 }
