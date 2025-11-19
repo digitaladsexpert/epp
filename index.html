@@ -66,24 +66,48 @@ body{
   box-shadow:0 8px 30px rgba(0,0,0,0.5);
   transition:transform .16s,box-shadow .16s,background .16s;
 }
-.option:hover{transform:translateY(-6px);box-shadow:0 18px 46px rgba(255,90,0,0.12);background:linear-gradient(90deg,rgba(255,90,0,0.08),rgba(255,150,0,0.06));}
-.option.selected{background:linear-gradient(90deg,rgba(255,120,0,0.18),rgba(255,60,0,0.12));color:#fff;transform:translateY(-8px)}
+.option:hover{
+  transform:translateY(-6px);
+  box-shadow:0 18px 46px rgba(255,90,0,0.12);
+  background:linear-gradient(90deg,rgba(255,90,0,0.08),rgba(255,150,0,0.06));
+}
+.option.selected{
+  background:linear-gradient(90deg,rgba(255,120,0,0.18),rgba(255,60,0,0.12));
+  color:#fff;
+  transform:translateY(-8px)
+}
 .thankyou{text-align:center;padding:6px}
 .thank-h{font-size:20px;margin:6px 0;font-weight:900}
-.thank-sub{color:var(--muted);margin-bottom:12px}
+.thank-sub{color:var();margin-bottom:12px}
 .join-btn{
   display:inline-block;position:relative;overflow:hidden;
   background:linear-gradient(90deg,#ff7a00,#ff4d00);
   color:#fff;padding:12px 18px;border-radius:12px;font-weight:900;text-decoration:none;
   box-shadow:0 14px 40px rgba(255,90,0,0.18);
 }
-.join-btn::after{content:'';position:absolute;left:-50%;top:0;width:40%;height:100%;background:linear-gradient(120deg,rgba(255,255,255,0)0%,rgba(255,255,255,0.14)50%,rgba(255,255,255,0)100%);transform:skewX(-20deg);filter:blur(6px);animation:shine 3.4s linear infinite}
+.join-btn::after{
+  content:'';position:absolute;left:-50%;top:0;width:40%;height:100%;
+  background:linear-gradient(120deg,rgba(255,255,255,0)0%,rgba(255,255,255,0.14)50%,rgba(255,255,255,0)100%);
+  transform:skewX(-20deg);filter:blur(6px);animation:shine 3.4s linear infinite
+}
 @keyframes shine{0%{left:-60%}100%{left:120%}}
-.fomo{background:linear-gradient(90deg,#ffe6d6,#ffd0b3);color:#2b0a00;padding:8px 12px;border-radius:10px;font-weight:800;display:inline-block;margin:10px 0;font-size:13px}
+.fomo{
+  background:linear-gradient(90deg,#ffe6d6,#ffd0b3);
+  color:#2b0a00;padding:8px 12px;border-radius:10px;font-weight:800;
+  display:inline-block;margin:10px 0;font-size:13px
+}
 .small{font-size:13px;color:var();margin-top:8px}
 .row{display:flex;gap:10px;justify-content:center;margin-top:12px}
-.btn-ghost{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text);font-weight:700;text-decoration:none;cursor:pointer}
-@media (max-width:520px){.container{padding:14px}.hype{font-size:18px}}
+.btn-ghost{
+  padding:10px 14px;border-radius:10px;
+  border:1px solid rgba(255,255,255,0.06);
+  background:transparent;color:var(--text);
+  font-weight:700;text-decoration:none;cursor:pointer
+}
+@media (max-width:520px){
+  .container{padding:14px}
+  .hype{font-size:18px}
+}
 </style>
 </head>
 
@@ -97,16 +121,16 @@ body{
 </main>
 
 <script>
-/* --- Integrated Telegram invite link (your provided link) --- */
-// For invite links the app scheme uses tg://join?invite=INVITE_HASH
+/* --- Integrated Telegram invite link --- */
 const telegramAppLink = "tg://join?invite=ZrjDtoQ9Tgw3ZWQ1";
 const telegramWebLink = "https://t.me/+ZrjDtoQ9Tgw3ZWQ1";
 
-let answered=false;
-let eventSent=false; // ensure fbq Subscribe sends once
-const qBox=document.getElementById('q-box'),
-      bar=document.getElementById('bar'),
-      progNum=document.getElementById('progNum');
+let answered = false;
+let eventSent = false; // ensure fbq Subscribe sends once
+
+const qBox   = document.getElementById('q-box'),
+      bar    = document.getElementById('bar'),
+      progNum= document.getElementById('progNum');
 
 function renderSingleQuestion(){
   qBox.innerHTML = `
@@ -121,7 +145,9 @@ function renderSingleQuestion(){
     </div>
   `;
   updateProgress(0);
-  document.querySelectorAll('.option').forEach(o=>o.addEventListener('click',onChooseSingle));
+  document.querySelectorAll('.option').forEach(o =>
+    o.addEventListener('click', onChooseSingle)
+  );
 }
 
 function updateProgress(pct){
@@ -131,49 +157,58 @@ function updateProgress(pct){
 
 function onChooseSingle(ev){
   if(answered) return;
-  answered=true;
-  const el = ev.currentTarget;
+  answered = true;
+  const el  = ev.currentTarget;
   const val = el.getAttribute('data-val');
-  document.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
   el.classList.add('selected');
-  setTimeout(()=>{ updateProgress(100); showResultFor(val); },220);
+  setTimeout(()=>{
+    updateProgress(100);
+    showResultFor(val);
+  },220);
 }
 
-/* Send Subscribe event (protected by eventSent flag) */
+/* --- Subscribe Event --- */
 function sendSubscribeEvent(){
   if(eventSent) return;
   eventSent = true;
   try{
-    // main FB Pixel event
-    fbq('track','Subscribe');
-    // optionally add any custom params:
-    // fbq('track','Subscribe', {method: 'landing_page', plan: 'free'} );
-  }catch(e){
-    // ignore if fbq not available
+    if (typeof fbq === "function") {
+      fbq('track', 'Subscribe', {
+        content_name: 'ElitePips Join',
+        value: 0,
+        currency: 'USD',
+        source: 'lp_yes_cta'
+      });
+    }
+  } catch(e){
     console.warn('fbq error', e);
   }
 }
 
-/* Try deep open via app URI, fallback to web invite after short delay */
-function deepRedirect(){
-  // fire subscribe event first (no intentional delay)
-  sendSubscribeEvent();
-
-  const now = Date.now();
-  // attempt app open (this will often open the Telegram app on mobile)
+/* --- Telegram Redirect (app + fallback web) --- */
+function redirectToTelegram(){
+  const start = Date.now();
+  // Try app open
   window.location.href = telegramAppLink;
 
-  // fallback to web link after 900ms (gives mobile OS time to switch to app)
-  setTimeout(()=>{ 
-    // avoid redirect loop if already moved away
-    if(Date.now() - now < 2000){
+  // Fallback to web after ~800ms
+  setTimeout(()=>{
+    if(Date.now() - start < 2000){
       window.location.href = telegramWebLink;
     }
-  },900);
+  },800);
+}
+
+/* Deep redirect: pehle event, phir chhota delay, phir Telegram */
+function deepRedirectWithEvent(){
+  sendSubscribeEvent();
+  setTimeout(redirectToTelegram, 200); // chhota delay for event network call
 }
 
 function showResultFor(val){
   if(val === 'yes'){
+    // YES FLOW – yahi pe Subscribe event track hoga
     qBox.innerHTML = `
       <div class="thankyou">
         <div class="hype small">You're moments away from live signals 🚀</div>
@@ -185,24 +220,32 @@ function showResultFor(val){
         <div class="count" style="margin-top:12px">Redirecting in <span id="count">7</span>s...</div>
       </div>
     `;
-    let t=7; const count=document.getElementById('count');
-    const timer=setInterval(()=>{
-      t--; if(count) count.textContent = t;
-      if(t<=0){ clearInterval(timer); /* fire event then redirect */ deepRedirect(); }
+
+    // Auto redirect + event (agar user wait kare)
+    let t = 7;
+    const count = document.getElementById('count');
+    const timer = setInterval(()=>{
+      t--;
+      if(count) count.textContent = t;
+      if(t <= 0){
+        clearInterval(timer);
+        deepRedirectWithEvent();
+      }
     },1000);
 
-    // attach click handler immediately (fires event then redirect)
-    setTimeout(()=>{ 
+    // CTA click pe turant event + redirect
+    setTimeout(()=>{
       const btn = document.getElementById('joinBtn');
       if(btn){
         btn.addEventListener('click', function(e){
           e.preventDefault();
-          // fire event and redirect right away (no extra waiting)
-          deepRedirect();
+          deepRedirectWithEvent();
         });
       }
     },50);
+
   } else {
+    // NO FLOW – yahan Subscribe event nahi bhej rahe
     qBox.innerHTML = `
       <div class="thankyou">
         <div class="hype small">No problem — take your time 🙂</div>
@@ -215,13 +258,17 @@ function showResultFor(val){
       </div>
     `;
     setTimeout(()=>{
-      document.getElementById('backBtn').addEventListener('click', ()=>{ answered=false; renderSingleQuestion(); });
-      // If user clicks resources, we consider that a path to the channel as well.
+      document.getElementById('backBtn').addEventListener('click', ()=>{
+        answered = false;
+        renderSingleQuestion();
+      });
+
+      // Resources ke liye normal redirect (yahan chaaho to apna blog/LP link de sakte ho)
       document.getElementById('learnBtn').addEventListener('click', function(e){
-        e.preventDefault();
-        // if you don't want this to be treated as a subscribe click, remove the sendSubscribeEvent() call below.
-        // Currently it will also send Subscribe then redirect.
-        deepRedirect();
+        // Default: jo href me hoga woh open hoga
+        // Example: custom URL chahiye to:
+        // e.preventDefault();
+        // window.location.href = 'https://tumhara-resource-url.com';
       });
     },50);
   }
